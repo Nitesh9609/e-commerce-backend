@@ -18,6 +18,11 @@ const userModel = new mongoose.Schema({
         min: 8,
         required: true
     },
+    confirmPassword:{
+        type:String,
+        min:8,
+        required:true
+    },
     email:{
         type:String,
         min:3,

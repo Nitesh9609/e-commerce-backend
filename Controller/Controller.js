@@ -14,14 +14,16 @@ exports.userSignUp = async (req, res) => {
     return;
   }
 
-  const salt = await bcrypt.genSalt(11);
+  const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
+    const confirmHashedPassword = await bcrypt.hash(req.body.confirmPassword, salt)
 
   try {
     const userSchema = Joi.object({
       firstName: Joi.string().min(3).required(),
       lastName: Joi.string().min(3).required(),
       password: Joi.string().min(8).required(),
+      confirmPassword: Joi.string().min(8).required(),
       email: Joi.string().min(3).email().required(),
       phoneNo: Joi.number().min(10).required(),
     });
@@ -30,22 +32,31 @@ exports.userSignUp = async (req, res) => {
       abortEarly: false,
     });
 
-    if (error) {
-      res.send(error.details[0].message);
+    // if (error) {
+    //   res.send(error.details[0].message);
+    // }
+
+    if(hashedPassword === confirmHashedPassword){
+      const userData = new userModel({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        password: hashedPassword,
+        confirmPassword: confirmHashedPassword,
+        email: req.body.email,
+        phoneNo: req.body.phoneNo,
+      });
+  
+      const saveUser = await userData.save();
+      res.send("User Created Successfully");
     }
 
-    const userData = new userModel({
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      password: hashedPassword,
-      email: req.body.email,
-      phoneNo: req.body.phoneNo,
-    });
+    else {
+      res.send('Please recheck your password')
+    }
 
-    const saveUser = await userData.save();
-    res.send("User Created Successfully");
+    
   } catch (error) {
-    res.send(error);
+    res.send('Something went wrong please try again');
   }
 };
 
@@ -59,7 +70,7 @@ exports.userSignIn = async (req,res) => {
 
     const validatePassword = await bcrypt.compare(req.body.password, userDetail.password)
     if(!validatePassword){
-        return res.status(400).send('worng password')
+        return res.send('worng password')
         
     }
 
