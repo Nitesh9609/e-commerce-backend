@@ -1,25 +1,20 @@
 const productModule = require("../Model/ProductModel/productModel");
 
-exports.productModule = (req, res) => {
+exports.productModule = async (req, res) => {
   
-
- 
-
-    const post = new productModule({
-      // id: req.body.id,
-      // image: req.body.image,
-      // name: req.body.name,
-      // brand: req.body.branch,
-      // price: req.body.proce,
-      // discount: req.body.discount,
-      // type: req.body.type,
-      // category: req.body.category,
-      // quantity: req.body.quantity ,
-      product: req.body.product
-    });
-
-
-    post.save()
-    .then(data => {res.send(data)})
-    .catch(err => {res.send(err)})
+    req.body.User = req.user.id
+    const product = await productModule.create(req.body)
+    res.status(201).json({
+      product
+    })
 };
+
+exports.showAllProducts = async( req,res) => {
+  const allProducts = await productModule.find()
+
+  try {
+    res.send(allProducts)
+  } catch (error) {
+    res.send(error)
+  }
+}
